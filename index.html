@@ -1,19 +1,30 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Hot Dog Delícia</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      background-image: url('https://via.placeholder.com/1024x1536');
+      background-size: cover;
+      background-attachment: fixed;
+      background-position: center;
+    }
+    .bg-overlay {
+      background-color: rgba(255, 255, 255, 0.85);
+    }
+  </style>
 </head>
-<body class="bg-yellow-50 min-h-screen flex flex-col items-center justify-center p-4">
-  <div class="bg-white shadow-xl rounded-2xl max-w-md w-full p-6">
-    <h1 class="text-3xl font-bold text-red-600 text-center mb-4">🌭 Hot Dog Delícia</h1>
-    <p class="text-gray-700 text-center mb-6">Monte seu pedido e envie via WhatsApp!</p>
+<body class="min-h-screen flex flex-col items-center justify-center p-4">
+  <div class="bg-overlay shadow-xl rounded-2xl max-w-md w-full p-6">
+    <h1 class="text-3xl font-bold text-red-600 text-center mb-2">🌭 Hot Dog Delícia</h1>
+    <p id="numeroPedido" class="text-center text-sm text-gray-600 mb-4">Pedido #001</p>
 
     <form id="pedidoForm" class="flex flex-col gap-3">
       <input type="text" id="nome" placeholder="Seu nome" required class="border p-2 rounded-lg">
-
+      
       <label class="font-semibold">Quantidade de Hot Dogs (R$14 cada):</label>
       <input type="number" id="quantidade" min="1" value="1" class="border p-2 rounded-lg">
 
@@ -24,7 +35,13 @@
       </select>
 
       <textarea id="obs" placeholder="Observações (opcional)" class="border p-2 rounded-lg"></textarea>
-      <input type="text" id="endereco" placeholder="Endereço ou localização" class="border p-2 rounded-lg">
+
+      <label class="font-semibold">Endereço para entrega:</label>
+      <textarea id="endereco" placeholder="Buscando localização..." class="border p-2 rounded-lg" rows="2"></textarea>
+
+      <div class="text-sm text-gray-500 -mt-2">
+        Se desejar, edite o endereço acima manualmente.
+      </div>
 
       <div class="text-lg font-bold mt-2">Total: R$ <span id="total">0</span></div>
 
@@ -39,6 +56,24 @@
     const quantidadeInput = document.getElementById('quantidade');
     const batataSelect = document.getElementById('batata');
     const totalSpan = document.getElementById('total');
+    const numeroPedidoText = document.getElementById('numeroPedido');
+    const enderecoInput = document.getElementById('endereco');
+
+    function getProximoNumeroPedido() {
+      let numero = parseInt(localStorage.getItem('numeroPedido')) || 1;
+      return numero;
+    }
+
+    function atualizarNumeroPedido() {
+      const numero = getProximoNumeroPedido();
+      numeroPedidoText.textContent = `Pedido #${String(numero).padStart(3, '0')}`;
+    }
+
+    function incrementarNumeroPedido() {
+      let numero = getProximoNumeroPedido();
+      numero++;
+      localStorage.setItem('numeroPedido', numero);
+    }
 
     function calcularTotal() {
       const qtd = parseInt(quantidadeInput.value) || 0;
@@ -49,9 +84,32 @@
       return total;
     }
 
+    function obterLocalizacao() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const lat = position.coords.latitude.toFixed(5);
+            const lng = position.coords.longitude.toFixed(5);
+            const mapsLink = `https://maps.google.com/?q=${lat},${lng}`;
+            enderecoInput.value = `Localização automática: ${mapsLink}`;
+          },
+          () => {
+            enderecoInput.placeholder = "Digite seu endereço manualmente";
+          }
+        );
+      } else {
+        enderecoInput.placeholder = "Seu navegador não suporta geolocalização.";
+      }
+    }
+
+    window.onload = () => {
+      atualizarNumeroPedido();
+      calcularTotal();
+      obterLocalizacao();
+    };
+
     quantidadeInput.addEventListener('input', calcularTotal);
     batataSelect.addEventListener('change', calcularTotal);
-    window.onload = calcularTotal;
 
     form.addEventListener('submit', function(e) {
       e.preventDefault();
@@ -59,19 +117,24 @@
       const quantidade = quantidadeInput.value;
       const batata = batataSelect.value;
       const obs = document.getElementById('obs').value;
-      const endereco = document.getElementById('endereco').value;
+      const endereco = enderecoInput.value;
       const total = calcularTotal().toFixed(2);
+      const numeroPedido = getProximoNumeroPedido();
 
-      const msg = `Olá! Meu nome é ${nome}.
-Quero ${quantidade} hot dog(s).
-Batata frita: ${batata}.
-Endereço: ${endereco}.
+      const msg = `🔔 *Pedido #${String(numeroPedido).padStart(3, '0')}*
+Nome: ${nome}
+Quantidade: ${quantidade} hot dog(s)
+Batata frita: ${batata}
+Endereço: ${endereco}
 Observações: ${obs}
 Total: R$${total}`;
 
-      const numero = '+5566981183380'; // Substitua com seu número com DDD e país
+      const numero = '+5566981183380'; // Substitua com seu número com DDD
       const link = `https://wa.me/${numero}?text=${encodeURIComponent(msg)}`;
       window.open(link, '_blank');
+
+      incrementarNumeroPedido();
+      atualizarNumeroPedido();
     });
   </script>
 </body>
