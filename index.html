@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hot Dog Delícia</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-yellow-100 min-h-screen flex flex-col items-center justify-center p-4">
+  <div class="bg-white shadow-xl rounded-2xl max-w-md w-full p-6 text-center">
+    <h1 class="text-3xl font-bold text-red-600 mb-4">🌭 Hot Dog Delícia</h1>
+    <p class="text-gray-700 mb-6">Monte seu hot dog e envie o pedido direto no WhatsApp!</p>
+
+    <form id="pedidoForm" class="flex flex-col gap-3">
+      <input type="text" id="nome" placeholder="Seu nome" required class="border p-2 rounded-lg">
+      <select id="tamanho" class="border p-2 rounded-lg">
+        <option value="Pequeno">Pequeno</option>
+        <option value="Médio">Médio</option>
+        <option value="Grande">Grande</option>
+      </select>
+      <label class="text-left font-semibold">Ingredientes:</label>
+      <div class="text-left grid grid-cols-2 gap-2">
+        <label><input type="checkbox" value="Batata Palha"> Batata Palha</label>
+        <label><input type="checkbox" value="Queijo"> Queijo</label>
+        <label><input type="checkbox" value="Milho"> Milho</label>
+        <label><input type="checkbox" value="Bacon"> Bacon</label>
+        <label><input type="checkbox" value="Molho Especial"> Molho Especial</label>
+      </div>
+      <textarea id="obs" placeholder="Observações (opcional)" class="border p-2 rounded-lg"></textarea>
+      <button type="submit" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-full mt-3">
+        Enviar Pedido via WhatsApp
+      </button>
+    </form>
+  </div>
+
+  <script>
+    document.getElementById('pedidoForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const nome = document.getElementById('nome').value;
+      const tamanho = document.getElementById('tamanho').value;
+      const ingredientes = Array.from(document.querySelectorAll('input[type="checkbox"]:checked'))
+                                .map(el => el.value)
+                                .join(', ');
+      const obs = document.getElementById('obs').value;
+
+      const msg = `Olá! Meu nome é ${nome}. Quero um hot dog ${tamanho} com: ${ingredientes}. Obs: ${obs}`;
+      const numero = '5599999999999'; // Substitua pelo seu número com DDD e país (ex: 55 para Brasil)
+
+      const link = `https://wa.me/${numero}?text=${encodeURIComponent(msg)}`;
+      window.open(link, '_blank');
+    });
+  </script>
+</body>
+</html>
